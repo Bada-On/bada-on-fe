@@ -97,6 +97,39 @@ const JejuMap = (props: JejuMapProps) => {
     }
   }, [state.currentAddress]);
 
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+
+          if (kakaoMapManager.current) {
+            kakaoMapManager.current.initializeMap(latitude, longitude);
+            kakaoMapManager.current.setMarker({
+              place: { x: longitude, y: latitude },
+              imageSrc: '/icons/current-location.svg',
+              movePlace: true,
+            });
+          }
+        },
+        error => {
+          console.error('Error fetching geolocation:', error);
+          showToast({
+            message: '현재 위치를 가져오는 데 실패했습니다.',
+            toastType: 'error',
+            timeout: 1000,
+          });
+        },
+      );
+    } else {
+      showToast({
+        message: '이 브라우저는 위치 서비스를 지원하지 않습니다.',
+        toastType: 'error',
+        timeout: 2000,
+      });
+    }
+  }, []);
+
   const isObjectEmpty = (obj: object) => {
     return Object.keys(obj).length === 0;
   };
